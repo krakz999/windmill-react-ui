@@ -88,7 +88,8 @@ export interface PaginationProps {
   /**
    * The accessible name of the pagination (what does it refer to?)
    */
-  label: string
+  label: (range: string, total: string) => string
+
   /**
    * The function executed on page change
    */
@@ -165,46 +166,44 @@ const Pagination = React.forwardRef<Ref, PaginationProps>(function Pagination(pr
 
   return (
     <div className={baseStyle} ref={ref} {...other}>
-      {/*
-       * This (label) should probably be an option, and not the default
-       */}
       <span className="flex items-center font-semibold tracking-wide uppercase">
-        Showing {activePage * resultsPerPage - resultsPerPage + 1}-
-        {Math.min(activePage * resultsPerPage, totalResults)} of {totalResults}
+        {label(
+          `${activePage * resultsPerPage - resultsPerPage + 1} -
+        ${Math.min(activePage * resultsPerPage, totalResults)}`,
+          totalResults.toString()
+        )}
       </span>
 
       <div className="flex mt-2 sm:mt-auto sm:justify-end">
-        <nav aria-label={label}>
-          <ul className="inline-flex items-center">
-            <li>
-              <NavigationButton
-                directionIcon="prev"
-                disabled={activePage === FIRST_PAGE}
-                onClick={handlePreviousClick}
-              />
+        <ul className="inline-flex items-center">
+          <li>
+            <NavigationButton
+              directionIcon="prev"
+              disabled={activePage === FIRST_PAGE}
+              onClick={handlePreviousClick}
+            />
+          </li>
+          {pages.map((p, i) => (
+            <li key={p.toString() + i}>
+              {p === '...' ? (
+                <EmptyPageButton />
+              ) : (
+                <PageButton
+                  page={p}
+                  isActive={p === activePage}
+                  onClick={() => setActivePage(+p)}
+                />
+              )}
             </li>
-            {pages.map((p, i) => (
-              <li key={p.toString() + i}>
-                {p === '...' ? (
-                  <EmptyPageButton />
-                ) : (
-                  <PageButton
-                    page={p}
-                    isActive={p === activePage}
-                    onClick={() => setActivePage(+p)}
-                  />
-                )}
-              </li>
-            ))}
-            <li>
-              <NavigationButton
-                directionIcon="next"
-                disabled={activePage === LAST_PAGE}
-                onClick={handleNextClick}
-              />
-            </li>
-          </ul>
-        </nav>
+          ))}
+          <li>
+            <NavigationButton
+              directionIcon="next"
+              disabled={activePage === LAST_PAGE}
+              onClick={handleNextClick}
+            />
+          </li>
+        </ul>
       </div>
     </div>
   )
